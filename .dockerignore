@@ -1,0 +1,7 @@
+.git
+.github
+infra
+node_modules
+test
+data
+*.md

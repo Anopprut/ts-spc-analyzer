@@ -21,3 +21,32 @@ curl -X POST localhost:3000/analyze -H "content-type: application/json" \
 - Verdict thresholds: Cpk >= 1.33 capable, >= 1.0 marginal, otherwise not capable.
 - One-sided specs return Cpk and no Cp.
 - Not covered: subgroup control charts (Xbar-R), non-normal data, Ppk.
+
+## Deploy to AWS (Docker + Terraform + GitHub Actions)
+
+```
+GitHub push (main) -> Actions: npm test -> docker build -> push to ECR -> App Runner start-deployment
+```
+Infrastructure (`infra/`): ECR repository with a lifecycle policy, an App Runner service (0.25 vCPU / 512 MB, health check on `/health`), and an IAM role that GitHub Actions assumes through OIDC, restricted to this repository's `main` branch. No AWS keys are stored in GitHub.
+
+**Status:** written and reviewed but not yet applied to a real AWS account.
+
+### One-time setup
+Prerequisites: AWS account, AWS CLI logged in, Terraform >= 1.6, Docker.
+```bash
+cd infra
+terraform init
+# 1) registry + CI role only (App Runner needs an image first)
+terraform apply
+# 2) push a first image
+aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin <account>.dkr.ecr.ap-southeast-1.amazonaws.com
+docker build -t <ecr_repository_url>:latest .. && docker push <ecr_repository_url>:latest
+# 3) create the service
+terraform apply -var deploy_service=true
+```
+Then, in the GitHub repo settings, add these **repository variables**: `AWS_ROLE_ARN` (output `github_deploy_role_arn`), `APPRUNNER_SERVICE_ARN` (output `service_arn`), and optionally `AWS_REGION`. Every push to `main` after that tests, builds and deploys.
+
+If the account already has the GitHub OIDC provider, add `-var create_oidc_provider=false`.
+
+### Cost and cleanup
+App Runner and ECR bill continuously (roughly a few USD per month for one small instance; check current AWS pricing). Remove everything with `terraform destroy` (delete the images in ECR first if destroy complains).

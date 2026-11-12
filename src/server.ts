@@ -13,6 +13,9 @@ const send = (res: import("node:http").ServerResponse, code: number, body: unkno
 };
 
 export const server = createServer((req, res) => {
+  if (req.method === "GET" && req.url === "/health") {
+    return send(res, 200, { status: "ok" });
+  }
   if (req.method !== "POST" || req.url !== "/analyze") {
     return send(res, 404, { error: "POST /analyze only" });
   }
