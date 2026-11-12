@@ -1,0 +1,13 @@
+{
+  "name": "ts-spc-analyzer",
+  "version": "1.0.0",
+  "description": "Cp/Cpk and 3-sigma control check for production measurements (TypeScript, zero dependencies)",
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "analyze": "node src/cli.ts data/measurements.csv --lsl 9.5 --usl 10.5",
+    "serve": "node src/server.ts"
+  },
+  "license": "MIT"
+}
