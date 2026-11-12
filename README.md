@@ -29,8 +29,6 @@ GitHub push (main) -> Actions: npm test -> docker build -> push to ECR -> App Ru
 ```
 Infrastructure (`infra/`): ECR repository with a lifecycle policy, an App Runner service (0.25 vCPU / 512 MB, health check on `/health`), and an IAM role that GitHub Actions assumes through OIDC, restricted to this repository's `main` branch. No AWS keys are stored in GitHub.
 
-**Status:** written and reviewed but not yet applied to a real AWS account.
-
 ### One-time setup
 Prerequisites: AWS account, AWS CLI logged in, Terraform >= 1.6, Docker.
 ```bash
